@@ -106,10 +106,10 @@
             {
                 var handle = $(e.target);
                 if (!handle.hasClass(list.options.handleClass)) {
-                    if (handle.closest('.' + list.options.noDragClass).length) {
-                        return;
-                    }
                     handle = handle.closest('.' + list.options.handleClass);
+                }
+                if (handle.closest('.' + list.options.noDragClass).length) {
+                    return;
                 }
                 if (!handle.length || list.dragEl || (!hasTouch && e.button !== 0) || (hasTouch && e.touches.length !== 1)) {
                     return;
