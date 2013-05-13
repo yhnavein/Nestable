@@ -264,6 +264,10 @@
                 target   = $(e.target),
                 dragItem = target.closest(this.options.itemNodeName);
 
+
+            this.sourceParent = dragItem.parent();
+            this.sourcePrevSibling = dragItem.prev();
+
             this.sourceRoot = target.closest('.' + this.options.rootClass);
             this.placeEl.css('height', dragItem.height());
 
@@ -308,7 +312,6 @@
             this.placeEl.replaceWith(el);
 
             this.dragEl.remove();
-            this.el.trigger('change');
 
             //Let's find out new parent id
             var parentItem = el.parent().parent();
@@ -316,16 +319,23 @@
             if(parentItem !== null && !parentItem.is('.' + this.options.rootClass))
                 parentId = parentItem.data('id');
 
-            if($.isFunction(this.options.dropCallback)) {
-              var details = {
-                sourceId   : el.data('id'),
-                destId     : parentId,
-                sourceEl   : el,
-                destParent : parentItem,
-                destRoot   : el.closest('.' + this.options.rootClass),
-                sourceRoot : this.sourceRoot
-              };
-              this.options.dropCallback.call(this, details);
+            var destPreviousSibling = el.prev();
+            var parentChanged = !this.sourceParent.is(el.parent());
+            var prevSiblingChanged = this.sourcePrevSibling.exists() != destPreviousSibling.exists()
+                                  && !this.sourcePrevSibling.is(destPreviousSibling);
+
+            if(parentChanged || prevSiblingChanged){
+                var details = {
+                    sourceId        : el.data('id'),
+                    destParentId    : parentId,
+                    prevSiblingId   : destPreviousSibling.data('id'),
+                    sourceEl        : el,
+                    destParent      : parentItem,
+                    prevSibling     : destPreviousSibling,
+                    destRoot        : el.closest('.' + this.options.rootClass),
+                    sourceRoot      : this.sourceRoot
+                };
+                this.el.trigger('change', details);
             }
 
             if (this.hasNewRoot) {
