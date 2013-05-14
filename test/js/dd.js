@@ -9,7 +9,8 @@ $.fn.exists = function () {
 
 $(function(){
     $('#nestable').nestable({
-        scroll: true
+        scroll: true,
+        maxDepth: 10
     });
 
     $('#nestable').on('change', function(e, details){
@@ -21,8 +22,9 @@ $(function(){
     $('#add').click(function(){
         $('#nestable ol:first-child')
                 .append($('<li>').attr('class', 'dd-item').attr('data-id', idStart)
-                        .append($('<div>').attr('class', 'dd-handle')
-                            .append('Hello ' + idStart)
+                        .append($('<div>').attr('class', 'dd-handle'))
+                            .append($('<div>').attr('class', 'dd-content')
+                                .append('Hello ' + idStart)
             ));
         idStart++;
     });

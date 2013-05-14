@@ -38,6 +38,7 @@
             listClass           : 'dd-list',
             itemClass           : 'dd-item',
             dragClass           : 'dd-dragel',
+            contentClass        : 'dd-content',
             handleClass         : 'dd-handle',
             collapsedClass      : 'dd-collapsed',
             placeClass          : 'dd-placeholder',
@@ -482,7 +483,7 @@
             if (!hasPointerEvents) {
                 this.dragEl[0].style.visibility = 'visible';
             }
-            if (this.pointEl.hasClass(opt.handleClass)) {
+            if (this.pointEl.hasClass(opt.contentClass)) {
                 this.pointEl = this.pointEl.parent(opt.itemNodeName);
             }
             if (this.pointEl.hasClass(opt.emptyClass)) {
