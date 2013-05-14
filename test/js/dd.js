@@ -11,11 +11,10 @@ $(function(){
     $('#nestable').nestable({
         scroll: true,
         maxDepth: 10
-    });
-
-    $('#nestable').on('change', function(e, details){
-        $('#changed').text('moved:' + details.sourceId + ', parent:' + details.destParentId + ', above:' + details.prevSiblingId);
-    });
+    })
+        .on('dropChange', function(e, details){
+            $('#changed').text('moved:' + details.sourceId + ', parent:' + details.destParentId + ', above:' + details.prevSiblingId);
+        });
 
     var idStart = 13;
 

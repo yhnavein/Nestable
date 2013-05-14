@@ -52,7 +52,6 @@
             //method for call when an item has been successfully dropped
             //method has 1 argument in which sends an object containing all
             //necessary details
-            dropCallback    : null,
             scroll              : false,
             scrollSensitivity   : 1,
             scrollSpeed         : 5,
@@ -336,11 +335,11 @@
                     destRoot        : el.closest('.' + this.options.rootClass),
                     sourceRoot      : this.sourceRoot
                 };
-                this.el.trigger('change', details);
+                this.el.trigger('dropChange', details);
             }
 
             if (this.hasNewRoot) {
-                this.dragRootEl.trigger('change');
+                this.dragRootEl.trigger('dropChange');
             }
             this.reset();
         },
