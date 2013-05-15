@@ -321,7 +321,8 @@
 
             var destPreviousSibling = el.prev();
             var parentChanged = !this.sourceParent.is(el.parent());
-            var prevSiblingChanged = this.sourcePrevSibling.exists() != destPreviousSibling.exists()
+
+            var prevSiblingChanged = this.exists(this.sourcePrevSibling) != this.exists(destPreviousSibling)
                                   && !this.sourcePrevSibling.is(destPreviousSibling);
 
             if(parentChanged || prevSiblingChanged){
@@ -535,6 +536,10 @@
                     this.hasNewRoot = this.el[0] !== this.dragRootEl[0];
                 }
             }
+        },
+
+        exists: function (jq){
+            return jq.length > 0;
         }
 
     };

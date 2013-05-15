@@ -3,10 +3,6 @@
  * @since 13/05/13
  */
 
-$.fn.exists = function () {
-    return this.length !== 0;
-};
-
 $(function(){
     $('#nestable').nestable({
         scroll: true,
