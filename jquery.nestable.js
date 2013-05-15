@@ -437,7 +437,7 @@
             if (mouse.dirAx && mouse.distAxX >= opt.threshold) {
                 // reset move distance on x-axis for new phase
                 mouse.distAxX = 0;
-                prev = this.placeEl.prev(opt.itemNodeName);
+                prev = this.placeEl.prev(opt.itemNodeName + ":visible");
                 // increase horizontal level if previous sibling exists and is not collapsed
                 if (mouse.distX > 0 && prev.length && !prev.hasClass(opt.collapsedClass)) {
                     // cannot increase level when item above is collapsed
@@ -461,7 +461,7 @@
                 // decrease horizontal level
                 if (mouse.distX < 0) {
                     // we can't decrease a level if an item preceeds the current one
-                    next = this.placeEl.next(opt.itemNodeName);
+                    next = this.placeEl.next(opt.itemNodeName + ":visible");
                     if (!next.length) {
                         parent = this.placeEl.parent();
                         this.placeEl.closest(opt.itemNodeName).after(this.placeEl);
