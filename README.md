@@ -68,7 +68,8 @@ These advanced config options are also available:
 * `listClass` The class of all list elements (default `'dd-list'`)
 * `itemClass` The class of all list item elements (default `'dd-item'`)
 * `dragClass` The class applied to the list element that is being dragged (default `'dd-dragel'`)
-* `handleClass` The class of the content element inside each list item (default `'dd-handle'`)
+* `handleClass` The class of the the handle the is used to move the content, this should be a child to the contentClass (default `'dd-handle'`)
+* `contentClass` The class of the content element inside each list item (default `'dd-content'`)
 * `collapsedClass` The class applied to lists that have been collapsed (default `'dd-collapsed'`)
 * `placeClass` The class of the placeholder element (default `'dd-placeholder'`)
 * `emptyClass` The class used for empty list placeholder elements (default `'dd-empty'`)
@@ -77,7 +78,6 @@ These advanced config options are also available:
 * `dropCallback` The callback method which is called when an item has been successfully moved. It has 1 argument: object with all details (default `null`)
 
 `dropCallback` details object:
-
 * `sourceId` - id of moved element
 * `destId` - id of destination parent or null if element was moved directly as root
 * `sourceEl` - whole moved element if you want to gather additional info about it

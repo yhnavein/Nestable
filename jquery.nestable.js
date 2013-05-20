@@ -32,27 +32,35 @@
         eCancel = hasTouch ? 'touchcancel' : 'mouseup';
 
     var defaults = {
-            listNodeName    : 'ol',
-            itemNodeName    : 'li',
-            rootClass       : 'dd',
-            listClass       : 'dd-list',
-            itemClass       : 'dd-item',
-            dragClass       : 'dd-dragel',
-            handleClass     : 'dd-handle',
-            collapsedClass  : 'dd-collapsed',
-            placeClass      : 'dd-placeholder',
-            noDragClass     : 'dd-nodrag',
-            emptyClass      : 'dd-empty',
-            expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
-            collapseBtnHTML : '<button data-action="collapse" type="button">Collapse</button>',
-            group           : 0,
-            maxDepth        : 5,
-            threshold       : 20,
-
+            listNodeName        : 'ol',
+            itemNodeName        : 'li',
+            rootClass           : 'dd',
+            listClass           : 'dd-list',
+            itemClass           : 'dd-item',
+            dragClass           : 'dd-dragel',
+            contentClass        : 'dd-content',
+            handleClass         : 'dd-handle',
+            collapsedClass      : 'dd-collapsed',
+            placeClass          : 'dd-placeholder',
+            noDragClass         : 'dd-nodrag',
+            emptyClass          : 'dd-empty',
+            expandBtnHTML       : '<button data-action="expand" type="button">Expand</button>',
+            collapseBtnHTML     : '<button data-action="collapse" type="button">Collapse</button>',
+            group               : 0,
+            maxDepth            : 5,
+            threshold           : 20,
             //method for call when an item has been successfully dropped
             //method has 1 argument in which sends an object containing all
             //necessary details
-            dropCallback    : null
+            scroll              : false,
+            scrollSensitivity   : 1,
+            scrollSpeed         : 5,
+            scrollTriggers      : {
+                top: 40,
+                left: 40,
+                right: -40,
+                bottom: -40
+            }
         };
 
     function Plugin(element, options)
@@ -98,10 +106,10 @@
             {
                 var handle = $(e.target);
                 if (!handle.hasClass(list.options.handleClass)) {
-                    if (handle.closest('.' + list.options.noDragClass).length) {
-                        return;
-                    }
                     handle = handle.closest('.' + list.options.handleClass);
+                }
+                if (handle.closest('.' + list.options.noDragClass).length) {
+                    return;
                 }
                 if (!handle.length || list.dragEl || (!hasTouch && e.button !== 0) || (hasTouch && e.touches.length !== 1)) {
                     return;
@@ -256,6 +264,10 @@
                 target   = $(e.target),
                 dragItem = target.closest(this.options.itemNodeName);
 
+
+            this.sourceParent = dragItem.parent();
+            this.sourcePrevSibling = dragItem.prev();
+
             this.sourceRoot = target.closest('.' + this.options.rootClass);
             this.placeEl.css('height', dragItem.height());
 
@@ -300,7 +312,6 @@
             this.placeEl.replaceWith(el);
 
             this.dragEl.remove();
-            this.el.trigger('change');
 
             //Let's find out new parent id
             var parentItem = el.parent().parent();
@@ -308,20 +319,28 @@
             if(parentItem !== null && !parentItem.is('.' + this.options.rootClass))
                 parentId = parentItem.data('id');
 
-            if($.isFunction(this.options.dropCallback)) {
-              var details = {
-                sourceId   : el.data('id'),
-                destId     : parentId,
-                sourceEl   : el,
-                destParent : parentItem,
-                destRoot   : el.closest('.' + this.options.rootClass),
-                sourceRoot : this.sourceRoot
-              };
-              this.options.dropCallback.call(this, details);
+            var destPreviousSibling = el.prev();
+            var parentChanged = !this.sourceParent.is(el.parent());
+
+            var prevSiblingChanged = this.exists(this.sourcePrevSibling) != this.exists(destPreviousSibling)
+                                  && !this.sourcePrevSibling.is(destPreviousSibling);
+
+            if(parentChanged || prevSiblingChanged){
+                var details = {
+                    sourceId        : el.data('id'),
+                    destParentId    : parentId,
+                    prevSiblingId   : destPreviousSibling.data('id'),
+                    sourceEl        : el,
+                    destParent      : parentItem,
+                    prevSibling     : destPreviousSibling,
+                    destRoot        : el.closest('.' + this.options.rootClass),
+                    sourceRoot      : this.sourceRoot
+                };
+                this.el.trigger('dropChange', details);
             }
 
             if (this.hasNewRoot) {
-                this.dragRootEl.trigger('change');
+                this.dragRootEl.trigger('dropChange');
             }
             this.reset();
         },
@@ -362,6 +381,41 @@
                 return;
             }
 
+            //Do scrolling
+            if (opt.scroll) {
+                var scrolled = false;
+                var scrollParent = this.el.scrollParent()[0];
+                if(scrollParent != document && scrollParent.tagName != 'HTML') {
+                    if((opt.scrollTriggers.bottom + scrollParent.offsetHeight) - e.pageY < opt.scrollSensitivity)
+                        scrollParent.scrollTop = scrolled = scrollParent.scrollTop + opt.scrollSpeed;
+                    else if(e.pageY - opt.scrollTriggers.top < opt.scrollSensitivity)
+                        scrollParent.scrollTop = scrolled = scrollParent.scrollTop - opt.scrollSpeed;
+
+                    if((opt.scrollTriggers.right + scrollParent.offsetWidth) - e.pageX < opt.scrollSensitivity)
+                        scrollParent.scrollLeft = scrolled = scrollParent.scrollLeft + opt.scrollSpeed;
+                    else if(e.pageX - opt.scrollTriggers.left < opt.scrollSensitivity)
+                        scrollParent.scrollLeft = scrolled = scrollParent.scrollLeft - opt.scrollSpeed;
+                } else {
+                    if(e.pageY - $(document).scrollTop() < opt.scrollSensitivity)
+                        scrolled = $(document).scrollTop($(document).scrollTop() - opt.scrollSpeed);
+                    else if($(window).height() - (e.pageY - $(document).scrollTop()) < opt.scrollSensitivity)
+                        scrolled = $(document).scrollTop($(document).scrollTop() + opt.scrollSpeed);
+
+                    if(e.pageX - $(document).scrollLeft() < opt.scrollSensitivity)
+                        scrolled = $(document).scrollLeft($(document).scrollLeft() - opt.scrollSpeed);
+                    else if($(window).width() - (e.pageX - $(document).scrollLeft()) < opt.scrollSensitivity)
+                        scrolled = $(document).scrollLeft($(document).scrollLeft() + opt.scrollSpeed);
+                }
+            }
+
+            if (this.scrollTimer)
+                clearTimeout(this.scrollTimer);
+            if (opt.scroll && scrolled) {
+                this.scrollTimer = setTimeout(function() {
+                    $(window).trigger(e);
+                }, 10);
+            }
+
             // calc distance moved on this axis (and direction)
             if (mouse.dirAx !== newAx) {
                 mouse.distAxX = 0;
@@ -384,7 +438,7 @@
             if (mouse.dirAx && mouse.distAxX >= opt.threshold) {
                 // reset move distance on x-axis for new phase
                 mouse.distAxX = 0;
-                prev = this.placeEl.prev(opt.itemNodeName);
+                prev = this.placeEl.prev(opt.itemNodeName + ":visible");
                 // increase horizontal level if previous sibling exists and is not collapsed
                 if (mouse.distX > 0 && prev.length && !prev.hasClass(opt.collapsedClass)) {
                     // cannot increase level when item above is collapsed
@@ -408,7 +462,7 @@
                 // decrease horizontal level
                 if (mouse.distX < 0) {
                     // we can't decrease a level if an item preceeds the current one
-                    next = this.placeEl.next(opt.itemNodeName);
+                    next = this.placeEl.next(opt.itemNodeName + ":visible");
                     if (!next.length) {
                         parent = this.placeEl.parent();
                         this.placeEl.closest(opt.itemNodeName).after(this.placeEl);
@@ -429,7 +483,7 @@
             if (!hasPointerEvents) {
                 this.dragEl[0].style.visibility = 'visible';
             }
-            if (this.pointEl.hasClass(opt.handleClass)) {
+            if (this.pointEl.hasClass(opt.contentClass)) {
                 this.pointEl = this.pointEl.parent(opt.itemNodeName);
             }
             if (this.pointEl.hasClass(opt.emptyClass)) {
@@ -482,6 +536,10 @@
                     this.hasNewRoot = this.el[0] !== this.dragRootEl[0];
                 }
             }
+        },
+
+        exists: function (jq){
+            return jq.length > 0;
         }
 
     };
