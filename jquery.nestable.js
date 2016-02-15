@@ -29,31 +29,31 @@
     var eStart  = hasTouch ? 'touchstart'  : 'mousedown',
         eMove   = hasTouch ? 'touchmove'   : 'mousemove',
         eEnd    = hasTouch ? 'touchend'    : 'mouseup';
-        eCancel = hasTouch ? 'touchcancel' : 'mouseup';
+    eCancel = hasTouch ? 'touchcancel' : 'mouseup';
 
     var defaults = {
-            listNodeName    : 'ol',
-            itemNodeName    : 'li',
-            rootClass       : 'dd',
-            listClass       : 'dd-list',
-            itemClass       : 'dd-item',
-            dragClass       : 'dd-dragel',
-            handleClass     : 'dd-handle',
-            collapsedClass  : 'dd-collapsed',
-            placeClass      : 'dd-placeholder',
-            noDragClass     : 'dd-nodrag',
-            emptyClass      : 'dd-empty',
-            expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
-            collapseBtnHTML : '<button data-action="collapse" type="button">Collapse</button>',
-            group           : 0,
-            maxDepth        : 5,
-            threshold       : 20,
+        listNodeName    : 'ol',
+        itemNodeName    : 'li',
+        rootClass       : 'dd',
+        listClass       : 'dd-list',
+        itemClass       : 'dd-item',
+        dragClass       : 'dd-dragel',
+        handleClass     : 'dd-handle',
+        collapsedClass  : 'dd-collapsed',
+        placeClass      : 'dd-placeholder',
+        noDragClass     : 'dd-nodrag',
+        emptyClass      : 'dd-empty',
+        expandBtnHTML   : '<button data-action="expand" type="button">Expand</button>',
+        collapseBtnHTML : '<button data-action="collapse" type="button">Collapse</button>',
+        group           : 0,
+        maxDepth        : 5,
+        threshold       : 20,
 
-            //method for call when an item has been successfully dropped
-            //method has 1 argument in which sends an object containing all
-            //necessary details
-            dropCallback    : null
-        };
+        //method for call when an item has been successfully dropped
+        //method has 1 argument in which sends an object containing all
+        //necessary details
+        dropCallback    : null
+    };
 
     function Plugin(element, options)
     {
@@ -144,22 +144,22 @@
             var data,
                 depth = 0,
                 list  = this;
-                step  = function(level, depth)
+            step  = function(level, depth)
+            {
+                var array = [ ],
+                    items = level.children(list.options.itemNodeName);
+                items.each(function()
                 {
-                    var array = [ ],
-                        items = level.children(list.options.itemNodeName);
-                    items.each(function()
-                    {
-                        var li   = $(this),
-                            item = $.extend({}, li.data()),
-                            sub  = li.children(list.options.listNodeName);
-                        if (sub.length) {
-                            item.children = step(sub, depth + 1);
-                        }
-                        array.push(item);
-                    });
-                    return array;
-                };
+                    var li   = $(this),
+                        item = $.extend({}, li.data()),
+                        sub  = li.children(list.options.listNodeName);
+                    if (sub.length) {
+                        item.children = step(sub, depth + 1);
+                    }
+                    array.push(item);
+                });
+                return array;
+            };
             data = step(list.el.find(list.options.listNodeName).first(), depth);
             return data;
         },
@@ -303,21 +303,23 @@
             this.el.trigger('change');
 
             //Let's find out new parent id
-            var parentItem = el.parent().parent();
+            var parentItem = el.parent();//.parent();
             var parentId = null;
             if(parentItem !== null && !parentItem.is('.' + this.options.rootClass))
                 parentId = parentItem.data('id');
 
+
             if($.isFunction(this.options.dropCallback)) {
-              var details = {
-                sourceId   : el.data('id'),
-                destId     : parentId,
-                sourceEl   : el,
-                destParent : parentItem,
-                destRoot   : el.closest('.' + this.options.rootClass),
-                sourceRoot : this.sourceRoot
-              };
-              this.options.dropCallback.call(this, details);
+                var details = {
+                    sourceId   : el.data('id'),
+                    destId     : parentId,
+                    prevSibling: el.prev().data('id'),
+                    sourceEl   : el,
+                    destParent : parentItem,
+                    destRoot   : el.closest('.' + this.options.rootClass),
+                    sourceRoot : this.sourceRoot
+                };
+                this.options.dropCallback.call(this, details);
             }
 
             if (this.hasNewRoot) {
@@ -457,7 +459,7 @@
                     return;
                 }
                 var before = e.pageY < (this.pointEl.offset().top + this.pointEl.height() / 2);
-                    parent = this.placeEl.parent();
+                parent = this.placeEl.parent();
                 // if empty create new list to replace empty placeholder
                 if (isEmpty) {
                     list = $(document.createElement(opt.listNodeName)).addClass(opt.listClass);
